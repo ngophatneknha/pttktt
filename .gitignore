@@ -1,0 +1,5 @@
+.venv/
+.idea/
+.qodo/
+__pycache__/
+*.pyc

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSP Explorer — Bài toán Người đi du lịch & các biến thể</title>
+    <meta name="description" content="Demo tương tác trực quan toàn diện về Bài toán Người đi du lịch (TSP) — Tại sao không thể tìm lời giải tối ưu trong thời gian thực?">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Navigation -->
+    <nav id="mainNav">
+        <div class="nav-brand">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-title">TSP Explorer</span>
+        </div>
+        <div class="nav-links">
+            <a href="#hero" class="nav-link active">Tổng quan</a>
+            <a href="#timeline" class="nav-link">Lịch sử</a>
+            <a href="#interactive" class="nav-link">Thử nghiệm</a>
+            <a href="#heldkarp" class="nav-link">Held-Karp</a>
+            <a href="#race" class="nav-link">Đua thuật toán</a>
+            <a href="#complexity" class="nav-link">Độ phức tạp</a>
+            <a href="#comparison" class="nav-link">So sánh</a>
+            <a href="#variants" class="nav-link">Biến thể</a>
+            <a href="#applications" class="nav-link">Ứng dụng</a>
+            <a href="#barriers" class="nav-link">3 Rào cản</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">NP-HARD PROBLEM · 1 TRONG 7 BÀI TOÁN THIÊN NIÊN KỶ</div>
+            <h1 class="hero-title">
+                Bài toán<br><span class="gradient-text">Người đi Du lịch</span>
+            </h1>
+            <p class="hero-subtitle">
+                Travelling Salesman Problem (TSP) & các biến thể
+            </p>
+            <p class="hero-description">
+                <em>"Cho n thành phố và khoảng cách giữa từng cặp thành phố, hãy tìm hành trình ngắn nhất đi qua tất cả các thành phố, mỗi thành phố đúng một lần, và trở về thành phố xuất phát."</em>
+            </p>
+            <div class="hero-question">
+                <span class="question-icon">❓</span>
+                <span>Tại sao chúng ta <strong>không thể</strong> tìm ra lời giải tối ưu cho TSP với số lượng thành phố lớn trong thời gian thực?</span>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="factorialDisplay">120</div>
+                    <div class="stat-label">Hành trình có thể<br><span class="stat-detail" id="factorialDetail">với 6 thành phố</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">O(n!)</div>
+                    <div class="stat-label">Độ phức tạp<br><span class="stat-detail">Brute Force</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">85,900</div>
+                    <div class="stat-label">Kỷ lục TSP chính xác<br><span class="stat-detail">Concorde (2006)</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">$1M</div>
+                    <div class="stat-label">Giải thưởng P vs NP<br><span class="stat-detail">Clay Mathematics</span></div>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a href="#interactive" class="btn btn-primary"><span>🧪</span> Thử nghiệm ngay</a>
+                <a href="#barriers" class="btn btn-secondary"><span>📖</span> 3 Rào cản</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <canvas id="heroCanvas"></canvas>
+        </div>
+    </section>
+
+    <!-- Formal Definition -->
+    <section id="definition" class="compact-section">
+        <div class="definition-card">
+            <h3>📐 Định nghĩa hình thức</h3>
+            <div class="definition-content">
+                <div class="math-block">
+                    <p>Xét đồ thị đầy đủ có trọng số <strong>G = (V, E, w)</strong></p>
+                    <p class="math-formula">L(π) = Σ<sub>i=1</sub><sup>n-1</sup> w(π(i), π(i+1)) + w(π(n), π(1))</p>
+                    <p class="math-formula highlight">π* = argmin L(π)</p>
+                    <p class="math-note">Số hành trình phân biệt (STSP): <strong>(n-1)!/2</strong></p>
+                </div>
+                <div class="two-forms">
+                    <div class="form-card decision">
+                        <span class="form-badge">NP-Complete</span>
+                        <h4>Bài toán Quyết định</h4>
+                        <p>Có tồn tại chu trình Hamilton với tổng trọng số ≤ k?</p>
+                        <span class="form-proof">Karp, 1972</span>
+                    </div>
+                    <div class="form-card optimization">
+                        <span class="form-badge hard">NP-Hard</span>
+                        <h4>Bài toán Tối ưu hóa</h4>
+                        <p>Tìm chu trình Hamilton có tổng trọng số nhỏ nhất</p>
+                        <span class="form-proof">Khó hơn dạng quyết định</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline">
+        <div class="section-header">
+            <div class="section-badge">Chương 1</div>
+            <h2>📜 Lịch sử phát triển TSP</h2>
+            <p>Hơn 190 năm nghiên cứu — từ sách hướng dẫn du lịch đến Deep Learning</p>
+        </div>
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <div class="timeline-item" data-year="1832">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1832</span>
+                    <h4>Sách hướng dẫn du lịch (Đức)</h4>
+                    <p>Đề cập đầu tiên đến vấn đề tìm hành trình hiệu quả cho thương nhân</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="1857">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1857</span>
+                    <h4>Hamilton — Icosian Game</h4>
+                    <p>Tiền thân trực tiếp của chu trình Hamilton — tìm đường đi qua 20 đỉnh</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="1930">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1930</span>
+                    <h4>Karl Menger — Botenproblem</h4>
+                    <p>Phát biểu hình thức đầu tiên gần với TSP hiện đại</p>
+                </div>
+            </div>
+            <div class="timeline-item highlight-item" data-year="1954">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1954</span>
+                    <h4>🏆 Dantzig, Fulkerson, Johnson</h4>
+                    <p>Giải TSP 49 thành phố bằng quy hoạch tuyến tính — kỷ lục đầu tiên</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="1962">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1962</span>
+                    <h4>Held & Karp — Dynamic Programming</h4>
+                    <p>Thuật toán DP O(n²·2ⁿ) — cải thiện vượt bậc so với brute force O(n!)</p>
+                </div>
+            </div>
+            <div class="timeline-item highlight-item" data-year="1972">
+                <div class="timeline-dot alert-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1972</span>
+                    <h4>⚡ Richard Karp — NP-Complete</h4>
+                    <p>Chứng minh TSP là NP-Complete — bước ngoặt lý thuyết quan trọng nhất</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="1976">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1976</span>
+                    <h4>Christofides — Thuật toán xấp xỉ 3/2</h4>
+                    <p>Bảo đảm lý thuyết tốt nhất cho metric TSP suốt 45 năm</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="1983">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1983</span>
+                    <h4>Kirkpatrick — Simulated Annealing</h4>
+                    <p>Mở đầu kỷ nguyên metaheuristic cho TSP</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="1991">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1991</span>
+                    <h4>LKH (Lin-Kernighan-Helsgott)</h4>
+                    <p>Công cụ thực tế mạnh nhất — nghiệm trong ~1% tối ưu cho n đến hàng triệu</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="1996">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">1996</span>
+                    <h4>Dorigo — Ant Colony Optimization</h4>
+                    <p>Tối ưu đàn kiến — lấy cảm hứng từ tự nhiên</p>
+                </div>
+            </div>
+            <div class="timeline-item highlight-item" data-year="2006">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">2006</span>
+                    <h4>🏆 Concorde — 85,900 thành phố</h4>
+                    <p>Kỷ lục thế giới TSP chính xác — Sweden PCB drilling problem</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="2015">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">2015</span>
+                    <h4>Vinyals — Pointer Networks</h4>
+                    <p>Deep Learning áp dụng vào TSP — kỷ nguyên Neural Combinatorial Optimization</p>
+                </div>
+            </div>
+            <div class="timeline-item" data-year="2022">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <span class="timeline-year">2022</span>
+                    <h4>Karlin-Klein-Gharan</h4>
+                    <p>Phá vỡ rào cản 3/2 của Christofides — kết quả đột phá sau 45 năm!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Section -->
+    <section id="interactive">
+        <div class="section-header">
+            <div class="section-badge">Chương 3-5</div>
+            <h2>🧪 Phòng thí nghiệm TSP</h2>
+            <p>Click vào canvas để thêm thành phố, sau đó chọn thuật toán để giải</p>
+        </div>
+        <div class="interactive-container">
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3>🏙️ Thành phố</h3>
+                    <div class="btn-row">
+                        <button class="btn btn-sm" onclick="generateRandom(5)">5</button>
+                        <button class="btn btn-sm" onclick="generateRandom(8)">8</button>
+                        <button class="btn btn-sm" onclick="generateRandom(10)">10</button>
+                        <button class="btn btn-sm" onclick="generateRandom(15)">15</button>
+                        <button class="btn btn-sm" onclick="generateRandom(20)">20</button>
+                    </div>
+                    <button class="btn btn-outline btn-full" onclick="clearCities()">🗑️ Xóa tất cả</button>
+                </div>
+                <div class="control-group">
+                    <h3>⚡ Thuật toán chính xác</h3>
+                    <button class="btn btn-algo btn-full" onclick="runAlgorithm('bruteforce')">
+                        <span class="algo-icon">🔍</span>
+                        <div class="algo-info">
+                            <span class="algo-name">Brute Force (Vét cạn)</span>
+                            <span class="algo-desc">O(n!) · n ≤ 11</span>
+                        </div>
+                    </button>
+                    <button class="btn btn-algo btn-full" onclick="runAlgorithm('heldkarp')">
+                        <span class="algo-icon">🧮</span>
+                        <div class="algo-info">
+                            <span class="algo-name">Held-Karp (DP)</span>
+                            <span class="algo-desc">O(n²·2ⁿ) · n ≤ 20</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="control-group">
+                    <h3>🎯 Heuristic & Metaheuristic</h3>
+                    <button class="btn btn-algo btn-full" onclick="runAlgorithm('nearest')">
+                        <span class="algo-icon">📍</span>
+                        <div class="algo-info">
+                            <span class="algo-name">Nearest Neighbor</span>
+                            <span class="algo-desc">Greedy · O(n²) · ~120% OPT</span>
+                        </div>
+                    </button>
+                    <button class="btn btn-algo btn-full" onclick="runAlgorithm('twoopt')">
+                        <span class="algo-icon">🔄</span>
+                        <div class="algo-info">
+                            <span class="algo-name">2-Opt Local Search</span>
+                            <span class="algo-desc">O(n²)/iter · ~105% OPT</span>
+                        </div>
+                    </button>
+                    <button class="btn btn-algo btn-full" onclick="runAlgorithm('genetic')">
+                        <span class="algo-icon">🧬</span>
+                        <div class="algo-info">
+                            <span class="algo-name">Genetic Algorithm</span>
+                            <span class="algo-desc">Metaheuristic · Tiến hóa</span>
+                        </div>
+                    </button>
+                    <button class="btn btn-algo btn-full" onclick="runAlgorithm('simulated')">
+                        <span class="algo-icon">🌡️</span>
+                        <div class="algo-info">
+                            <span class="algo-name">Simulated Annealing</span>
+                            <span class="algo-desc">Kirkpatrick (1983) · ~102% OPT</span>
+                        </div>
+                    </button>
+                    <button class="btn btn-algo btn-full" onclick="runAlgorithm('aco')">
+                        <span class="algo-icon">🐜</span>
+                        <div class="algo-info">
+                            <span class="algo-name">Ant Colony Optimization</span>
+                            <span class="algo-desc">Dorigo (1996) · ~103% OPT</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="control-group">
+                    <h3>📊 Kết quả</h3>
+                    <div class="result-display">
+                        <div class="result-item">
+                            <span class="result-label">Thuật toán:</span>
+                            <span class="result-value" id="resultAlgo">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Khoảng cách:</span>
+                            <span class="result-value" id="resultDist">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Thời gian:</span>
+                            <span class="result-value" id="resultTime">—</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Đã duyệt:</span>
+                            <span class="result-value" id="resultPerms">—</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <h3>⚙️ Tốc độ</h3>
+                    <input type="range" id="speedSlider" min="1" max="100" value="50" class="slider">
+                    <div class="speed-labels"><span>Chậm</span><span>Nhanh</span></div>
+                </div>
+            </div>
+            <div class="canvas-container">
+                <canvas id="tspCanvas"></canvas>
+                <div class="canvas-overlay" id="canvasOverlay">
+                    <span>Click để thêm thành phố hoặc chọn số lượng bên trái</span>
+                </div>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Held-Karp Visualization -->
+    <section id="heldkarp">
+        <div class="section-header">
+            <div class="section-badge">Phụ lục A</div>
+            <h2>🧮 Held-Karp: Bước qua từng bước</h2>
+            <p>Minh họa thuật toán Dynamic Programming — Bellman (1962) & Held-Karp (1962)</p>
+        </div>
+        <div class="hk-container">
+            <div class="hk-info">
+                <div class="hk-formula-card">
+                    <h4>Công thức truy hồi</h4>
+                    <div class="math-formula large">C(S, j) = min<sub>i∈S,i≠j</sub> { C(S\{j}, i) + d<sub>ij</sub> }</div>
+                    <p>Trường hợp cơ sở: C({j}, j) = d<sub>1j</sub></p>
+                    <p>Nghiệm: OPT = min<sub>j≠1</sub> { C(V\{1}, j) + d<sub>j1</sub> }</p>
+                </div>
+                <div class="hk-matrix" id="hkMatrix">
+                    <h4>Ma trận khoảng cách (4 TP)</h4>
+                    <table>
+                        <tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+                        <tr><td><strong>1</strong></td><td>0</td><td>10</td><td>15</td><td>20</td></tr>
+                        <tr><td><strong>2</strong></td><td>10</td><td>0</td><td>35</td><td>25</td></tr>
+                        <tr><td><strong>3</strong></td><td>15</td><td>35</td><td>0</td><td>30</td></tr>
+                        <tr><td><strong>4</strong></td><td>20</td><td>25</td><td>30</td><td>0</td></tr>
+                    </table>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="runHeldKarpDemo()">
+                    ▶️ Chạy Held-Karp step-by-step
+                </button>
+            </div>
+            <div class="hk-steps" id="hkSteps">
+                <div class="hk-step-placeholder">
+                    <span>Nhấn nút để xem từng bước tính toán</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Algorithm Race Section -->
+    <section id="race">
+        <div class="section-header">
+            <div class="section-badge">Chương 6</div>
+            <h2>🏁 Đua thuật toán</h2>
+            <p>So sánh hiệu suất trực tiếp — giống Bảng 6.2 trong báo cáo</p>
+        </div>
+        <div class="race-container">
+            <div class="race-controls">
+                <div class="race-config">
+                    <label>Số thành phố:</label>
+                    <select id="raceCityCount">
+                        <option value="6">6 TP</option>
+                        <option value="8" selected>8 TP</option>
+                        <option value="10">10 TP</option>
+                        <option value="12">12 TP</option>
+                        <option value="15">15 TP</option>
+                        <option value="20">20 TP</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-race" onclick="startRace()">🏁 Bắt đầu cuộc đua!</button>
+            </div>
+            <div class="race-tracks">
+                <div class="race-track" id="track-nn">
+                    <div class="track-header">
+                        <span class="track-icon">📍</span>
+                        <span class="track-name">Nearest Neighbor</span>
+                        <span class="track-badge">O(n²)</span>
+                    </div>
+                    <canvas class="track-canvas" id="raceCanvas-nn"></canvas>
+                    <div class="track-results">
+                        <span class="track-dist" id="raceDist-nn">—</span>
+                        <span class="track-time" id="raceTime-nn">—</span>
+                    </div>
+                    <div class="track-progress"><div class="track-fill" id="raceFill-nn"></div></div>
+                </div>
+                <div class="race-track" id="track-2opt">
+                    <div class="track-header">
+                        <span class="track-icon">🔄</span>
+                        <span class="track-name">2-Opt</span>
+                        <span class="track-badge">O(n²)/iter</span>
+                    </div>
+                    <canvas class="track-canvas" id="raceCanvas-2opt"></canvas>
+                    <div class="track-results">
+                        <span class="track-dist" id="raceDist-2opt">—</span>
+                        <span class="track-time" id="raceTime-2opt">—</span>
+                    </div>
+                    <div class="track-progress"><div class="track-fill" id="raceFill-2opt"></div></div>
+                </div>
+                <div class="race-track" id="track-ga">
+                    <div class="track-header">
+                        <span class="track-icon">🧬</span>
+                        <span class="track-name">Genetic Algorithm</span>
+                        <span class="track-badge">Metaheuristic</span>
+                    </div>
+                    <canvas class="track-canvas" id="raceCanvas-ga"></canvas>
+                    <div class="track-results">
+                        <span class="track-dist" id="raceDist-ga">—</span>
+                        <span class="track-time" id="raceTime-ga">—</span>
+                    </div>
+                    <div class="track-progress"><div class="track-fill" id="raceFill-ga"></div></div>
+                </div>
+                <div class="race-track" id="track-sa">
+                    <div class="track-header">
+                        <span class="track-icon">🌡️</span>
+                        <span class="track-name">Simulated Annealing</span>
+                        <span class="track-badge">Kirkpatrick 1983</span>
+                    </div>
+                    <canvas class="track-canvas" id="raceCanvas-sa"></canvas>
+                    <div class="track-results">
+                        <span class="track-dist" id="raceDist-sa">—</span>
+                        <span class="track-time" id="raceTime-sa">—</span>
+                    </div>
+                    <div class="track-progress"><div class="track-fill" id="raceFill-sa"></div></div>
+                </div>
+            </div>
+            <div class="race-winner" id="raceWinner" style="display:none;">
+                <span class="winner-trophy">🏆</span>
+                <span class="winner-text" id="winnerText"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Complexity Visualization -->
+    <section id="complexity">
+        <div class="section-header">
+            <div class="section-badge">Chương 3</div>
+            <h2>📈 Sự bùng nổ tổ hợp</h2>
+            <p>Không gian giải pháp tăng giai thừa — (n-1)!/2 hành trình phân biệt</p>
+        </div>
+        <div class="complexity-container">
+            <div class="complexity-chart-area">
+                <canvas id="complexityChart"></canvas>
+            </div>
+            <div class="complexity-calculator">
+                <h3>🧮 Máy tính thời gian</h3>
+                <p class="calc-desc">Giả sử máy tính kiểm tra <strong>1 tỷ</strong> hành trình/giây</p>
+                <div class="calc-slider-container">
+                    <label>Số thành phố: <span id="calcCityCount" class="highlight-num">10</span></label>
+                    <input type="range" id="calcSlider" min="3" max="30" value="10" class="slider" oninput="updateCalculator()">
+                </div>
+                <div class="calc-results">
+                    <div class="calc-item">
+                        <span class="calc-label">Số hành trình (n-1)!/2:</span>
+                        <span class="calc-value" id="calcPaths">—</span>
+                    </div>
+                    <div class="calc-item">
+                        <span class="calc-label">Brute Force:</span>
+                        <span class="calc-value" id="calcTimeBF">—</span>
+                    </div>
+                    <div class="calc-item held-karp-item">
+                        <span class="calc-label">Held-Karp (n²·2ⁿ):</span>
+                        <span class="calc-value" id="calcTimeHK">—</span>
+                    </div>
+                    <div class="calc-item comparison">
+                        <span class="calc-label">So sánh:</span>
+                        <span class="calc-value" id="calcComparison">—</span>
+                    </div>
+                </div>
+                <div class="milestone-cards" id="milestoneCards"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Algorithm Comparison Table -->
+    <section id="comparison">
+        <div class="section-header">
+            <div class="section-badge">Bảng 6.2</div>
+            <h2>📊 So sánh tổng hợp các thuật toán</h2>
+            <p>Dữ liệu từ báo cáo — % so với tối ưu (OPT)</p>
+        </div>
+        <div class="comparison-table-wrapper">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Thuật toán</th>
+                        <th>Loại</th>
+                        <th>Độ phức tạp</th>
+                        <th>Chất lượng</th>
+                        <th>Quy mô thực tế</th>
+                        <th>Trực quan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="algo-exact">
+                        <td><strong>Brute Force</strong></td>
+                        <td><span class="type-badge exact">Chính xác</span></td>
+                        <td class="mono">O(n!)</td>
+                        <td><span class="quality-badge perfect">100% OPT</span></td>
+                        <td>n ≤ 12</td>
+                        <td><div class="quality-bar" style="--w:100%; --c:#10b981"></div></td>
+                    </tr>
+                    <tr class="algo-exact">
+                        <td><strong>Held-Karp (DP)</strong></td>
+                        <td><span class="type-badge exact">Chính xác</span></td>
+                        <td class="mono">O(n²·2ⁿ)</td>
+                        <td><span class="quality-badge perfect">100% OPT</span></td>
+                        <td>n ≤ 25</td>
+                        <td><div class="quality-bar" style="--w:100%; --c:#10b981"></div></td>
+                    </tr>
+                    <tr class="algo-exact">
+                        <td><strong>Branch & Bound</strong></td>
+                        <td><span class="type-badge exact">Chính xác</span></td>
+                        <td class="mono">Worst O(n!)</td>
+                        <td><span class="quality-badge perfect">100% OPT</span></td>
+                        <td>n ≤ 100</td>
+                        <td><div class="quality-bar" style="--w:100%; --c:#10b981"></div></td>
+                    </tr>
+                    <tr class="algo-exact highlight-row">
+                        <td><strong>Concorde (LP+BnB)</strong></td>
+                        <td><span class="type-badge exact">Chính xác</span></td>
+                        <td class="mono">Thực nghiệm</td>
+                        <td><span class="quality-badge perfect">100% OPT</span></td>
+                        <td><strong>n ≤ 85,900</strong></td>
+                        <td><div class="quality-bar" style="--w:100%; --c:#10b981"></div></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nearest Neighbor</strong></td>
+                        <td><span class="type-badge greedy">Greedy</span></td>
+                        <td class="mono">O(n²)</td>
+                        <td><span class="quality-badge good">~120-125%</span></td>
+                        <td>Mọi n</td>
+                        <td><div class="quality-bar" style="--w:78%; --c:#f59e0b"></div></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Christofides</strong></td>
+                        <td><span class="type-badge approx">Xấp xỉ</span></td>
+                        <td class="mono">O(n³)</td>
+                        <td><span class="quality-badge good">≤ 150%</span></td>
+                        <td>n ≤ 100K</td>
+                        <td><div class="quality-bar" style="--w:67%; --c:#f59e0b"></div></td>
+                    </tr>
+                    <tr>
+                        <td><strong>2-Opt</strong></td>
+                        <td><span class="type-badge local">Local Search</span></td>
+                        <td class="mono">O(n²)/iter</td>
+                        <td><span class="quality-badge great">~105-110%</span></td>
+                        <td>n ≤ 100K</td>
+                        <td><div class="quality-bar" style="--w:92%; --c:#22d3ee"></div></td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>LKH-3</strong> ⭐</td>
+                        <td><span class="type-badge local">Local Search</span></td>
+                        <td class="mono">~O(n²)</td>
+                        <td><span class="quality-badge excellent">~101-102%</span></td>
+                        <td><strong>n ≤ 10M</strong></td>
+                        <td><div class="quality-bar" style="--w:98%; --c:#10b981"></div></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Simulated Annealing</strong></td>
+                        <td><span class="type-badge meta">Metaheuristic</span></td>
+                        <td class="mono">Cấu hình</td>
+                        <td><span class="quality-badge great">~102-105%</span></td>
+                        <td>n ≤ 1M</td>
+                        <td><div class="quality-bar" style="--w:95%; --c:#22d3ee"></div></td>
+                    </tr>
+                    <tr>
+                        <td><strong>ACO (Đàn kiến)</strong></td>
+                        <td><span class="type-badge meta">Metaheuristic</span></td>
+                        <td class="mono">O(n²·iter)</td>
+                        <td><span class="quality-badge good">~103-107%</span></td>
+                        <td>n ≤ 100K</td>
+                        <td><div class="quality-bar" style="--w:93%; --c:#22d3ee"></div></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Attention Model</strong></td>
+                        <td><span class="type-badge dl">Deep Learning</span></td>
+                        <td class="mono">O(n²)</td>
+                        <td><span class="quality-badge good">~103-108%</span></td>
+                        <td>n ≤ 1000</td>
+                        <td><div class="quality-bar" style="--w:92%; --c:#a855f7"></div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- TSP Variants -->
+    <section id="variants">
+        <div class="section-header">
+            <div class="section-badge">Chương 2 — Bảng 2.1</div>
+            <h2>🔀 Phân loại & Biến thể TSP</h2>
+            <p>9 biến thể chính — từ TSP đối xứng đến Dynamic TSP</p>
+        </div>
+        <div class="variants-grid">
+            <div class="variant-card" onclick="showVariantDemo('stsp')">
+                <div class="variant-icon">🔁</div>
+                <h3>Symmetric TSP (STSP)</h3>
+                <p>d<sub>ij</sub> = d<sub>ji</sub> — Khoảng cách Euclid, đường bộ thông thường</p>
+                <div class="variant-tag">Cơ bản · (n-1)!/2 hành trình</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('atsp')">
+                <div class="variant-icon">↗️</div>
+                <h3>Asymmetric TSP (ATSP)</h3>
+                <p>d<sub>ij</sub> ≠ d<sub>ji</sub> — Đường một chiều, gió ngược khi bay</p>
+                <div class="variant-tag">Tổng quát hơn STSP</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('mtsp')">
+                <div class="variant-icon">👥</div>
+                <h3>Multiple TSP (mTSP)</h3>
+                <p>m người xuất phát từ depot. Phân chia thành phố cho từng người</p>
+                <div class="variant-tag">Tiền thân của VRP</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('vrp')">
+                <div class="variant-icon">🚚</div>
+                <h3>CVRP (Vehicle Routing)</h3>
+                <p>k xe tải, sức chứa C. Σ d<sub>i</sub> ≤ C cho mỗi tuyến. Logistics hiện đại</p>
+                <div class="variant-tag">Ứng dụng #1 thực tế</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('tspw')">
+                <div class="variant-icon">⏰</div>
+                <h3>TSP with Time Windows</h3>
+                <p>Mỗi TP có khung [a<sub>i</sub>, b<sub>i</sub>]. Đến sớm = chờ, đến muộn = vi phạm</p>
+                <div class="variant-tag">Giao hàng e-commerce</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('pcsp')">
+                <div class="variant-icon">💰</div>
+                <h3>Prize-Collecting TSP</h3>
+                <p>Bỏ qua TP i → phạt π<sub>i</sub>. Tối thiểu: khoảng cách + tổng phạt</p>
+                <div class="variant-tag">Lập kế hoạch du lịch</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('op')">
+                <div class="variant-icon">🎯</div>
+                <h3>Orienteering Problem (OP)</h3>
+                <p>Ngân sách B giới hạn. Mỗi TP có điểm thưởng s<sub>i</sub>. Maximize tổng thưởng</p>
+                <div class="variant-tag">Trinh sát, sensor</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('gtsp')">
+                <div class="variant-icon">🎲</div>
+                <h3>Generalized TSP (GTSP)</h3>
+                <p>TP chia thành nhóm. Chọn đúng 1 TP mỗi nhóm, tối thiểu khoảng cách</p>
+                <div class="variant-tag">Chọn nhà cung cấp</div>
+            </div>
+            <div class="variant-card" onclick="showVariantDemo('dtsp')">
+                <div class="variant-icon">⚡</div>
+                <h3>Dynamic TSP</h3>
+                <p>Thành phố mới xuất hiện, đường thay đổi theo thời gian thực</p>
+                <div class="variant-tag">Giao hàng on-demand</div>
+            </div>
+        </div>
+        <div class="variant-demo-modal" id="variantModal" style="display:none;">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeVariantModal()">✕</button>
+                <h3 id="modalTitle"></h3>
+                <canvas id="variantCanvas"></canvas>
+                <p id="modalDesc"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real-World Applications -->
+    <section id="applications">
+        <div class="section-header">
+            <div class="section-badge">Chương 7</div>
+            <h2>🌍 Ứng dụng thực tiễn</h2>
+            <p>TSP xuất hiện ở khắp nơi — từ logistics đến giải trình tự DNA</p>
+        </div>
+        <div class="apps-grid">
+            <div class="app-card">
+                <div class="app-icon">🚚</div>
+                <h3>Logistics & Giao hàng</h3>
+                <p>Amazon, FedEx, Grab — tối ưu tuyến đường cho hàng trăm tài xế/ngày. <strong>Giảm chi phí 10-30%</strong> (McKinsey 2020)</p>
+                <div class="app-examples">Last-mile delivery · Tuyến xe buýt · Tàu biển</div>
+            </div>
+            <div class="app-card">
+                <div class="app-icon">🔌</div>
+                <h3>Thiết kế VLSI</h3>
+                <p>Máy khoan PCB đi qua <strong>hàng nghìn lỗ</strong>. Kỷ lục 85,900 TP từ Sweden PCB drilling problem</p>
+                <div class="app-examples">Vi mạch · CNC · Sản xuất</div>
+            </div>
+            <div class="app-card">
+                <div class="app-icon">🧬</div>
+                <h3>Sinh học & DNA</h3>
+                <p>Sequencing by Hybridization — tìm chuỗi DNA chứa tất cả k-mers ≡ Hamiltonian path</p>
+                <div class="app-examples">Genome Project · Protein Folding</div>
+            </div>
+            <div class="app-card">
+                <div class="app-icon">🔭</div>
+                <h3>Thiên văn học</h3>
+                <p>NASA tối ưu thứ tự quan sát cho <strong>Hubble Space Telescope</strong> — minimizing slew time</p>
+                <div class="app-examples">Kính thiên văn · Phân tích phổ</div>
+            </div>
+            <div class="app-card">
+                <div class="app-icon">🤖</div>
+                <h3>Robotics</h3>
+                <p>Coverage Path Planning — Roomba, drone nông nghiệp, robot kiểm tra nhà máy</p>
+                <div class="app-examples">Pick-and-Place · Amazon Robotics</div>
+            </div>
+            <div class="app-card">
+                <div class="app-icon">💹</div>
+                <h3>Tài chính</h3>
+                <p>High-frequency trading — tối ưu thứ tự giao dịch để giảm tác động thị trường</p>
+                <div class="app-examples">Portfolio · Order execution</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Three Barriers (Conclusion) -->
+    <section id="barriers">
+        <div class="section-header">
+            <div class="section-badge">Chương 9 — Kết luận</div>
+            <h2>🔒 Ba rào cản không thể vượt qua</h2>
+            <p>Trả lời câu hỏi trung tâm: Tại sao TSP không thể giải tối ưu trong thời gian thực?</p>
+        </div>
+
+        <div class="central-question">
+            <div class="question-box">
+                <span class="q-mark">?</span>
+                <div class="q-text">
+                    <p class="q-question">Tại sao chúng ta không thể tìm ra lời giải tối ưu cho TSP với số lượng thành phố lớn trong thời gian thực?</p>
+                    <p class="q-answer-short"><strong>Câu trả lời ngắn gọn:</strong> Vì TSP là NP-Hard — một lớp bài toán mà lý thuyết tính toán cho thấy (có điều kiện) không thể giải hiệu quả bằng bất kỳ thuật toán cổ điển nào.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="barriers-grid">
+            <div class="barrier-card barrier-1">
+                <div class="barrier-number">01</div>
+                <div class="barrier-icon">💥</div>
+                <h3>Rào cản Tổ hợp</h3>
+                <p>Số hành trình cần xét là <strong>(n-1)!/2</strong> — tăng siêu hàm mũ. Với <strong>n=25</strong>, thời gian vét cạn đã là <strong>hàng triệu năm</strong> trên siêu máy tính hiện đại.</p>
+                <div class="barrier-visual">
+                    <div class="explosion-item"><span>5 TP</span><div class="explosion-bar" style="--width:1%"></div><span>12</span></div>
+                    <div class="explosion-item"><span>10 TP</span><div class="explosion-bar" style="--width:3%"></div><span>181,440</span></div>
+                    <div class="explosion-item"><span>15 TP</span><div class="explosion-bar" style="--width:12%"></div><span>43 tỷ</span></div>
+                    <div class="explosion-item"><span>20 TP</span><div class="explosion-bar" style="--width:40%"></div><span>60 nghìn tỷ tỷ</span></div>
+                    <div class="explosion-item"><span>25 TP</span><div class="explosion-bar" style="--width:100%"></div><span>≈ 3.1 × 10²³</span></div>
+                </div>
+                <div class="barrier-quote">Không có phím tắt toán học nào cho phép tìm tối ưu nhanh hơn cơ bản.</div>
+            </div>
+
+            <div class="barrier-card barrier-2">
+                <div class="barrier-number">02</div>
+                <div class="barrier-icon">🔐</div>
+                <h3>Rào cản Lý thuyết</h3>
+                <p>TSP là <strong>NP-Hard</strong> — chứng minh bằng quy đổi từ Hamiltonian Cycle (Karp, 1972). Theo giả thuyết <strong>P ≠ NP</strong>, không tồn tại thuật toán đa thức nào cho TSP.</p>
+                <div class="np-diagram">
+                    <div class="np-circle np-all">
+                        <span>NP-Hard</span>
+                        <div class="np-circle np-np">
+                            <span>NP</span>
+                            <div class="np-circle np-p"><span>P</span></div>
+                            <div class="np-label np-complete">NP-Complete<br>⬤ TSP Decision</div>
+                        </div>
+                        <div class="np-label np-tsp">⬤ TSP Optimization</div>
+                    </div>
+                </div>
+                <div class="barrier-quote">P vs NP là 1 trong 7 Bài toán Thiên niên kỷ — giải thưởng $1,000,000</div>
+            </div>
+
+            <div class="barrier-card barrier-3">
+                <div class="barrier-number">03</div>
+                <div class="barrier-icon">⚙️</div>
+                <h3>Rào cản Thực tế</h3>
+                <p>Ngay cả thuật toán DP tốt nhất <strong>(Held-Karp, O(n²·2ⁿ))</strong> cũng yêu cầu bộ nhớ và thời gian hàm mũ, giới hạn ở <strong>n ≤ 30</strong>.</p>
+                <div class="practical-stats">
+                    <div class="p-stat">
+                        <span class="p-range">n=1,000</span>
+                        <span class="p-method">Chỉ giải xấp xỉ</span>
+                    </div>
+                    <div class="p-stat">
+                        <span class="p-range">n=1,000,000</span>
+                        <span class="p-method">Cần LKH-3 (~1% OPT)</span>
+                    </div>
+                    <div class="p-stat">
+                        <span class="p-range">Real-time</span>
+                        <span class="p-method">Bất khả thi cho n lớn</span>
+                    </div>
+                </div>
+                <div class="barrier-quote">Các bài toán thực tế với n=1,000 đến n=1,000,000 chỉ có thể giải xấp xỉ.</div>
+            </div>
+        </div>
+
+        <!-- Research Frontiers -->
+        <div class="research-section">
+            <h3 class="research-title">🔮 Hướng nghiên cứu mở (Chương 8)</h3>
+            <div class="research-grid">
+                <div class="research-card">
+                    <span class="research-icon">⚛️</span>
+                    <h4>Quantum Computing</h4>
+                    <p>Grover: O(n!) → O(√(n!)) — vẫn siêu đa thức. D-Wave chưa vượt solver cổ điển.</p>
+                    <span class="research-status status-early">Sơ khai (NISQ era)</span>
+                </div>
+                <div class="research-card">
+                    <span class="research-icon">🧠</span>
+                    <h4>Neural NCO</h4>
+                    <p>Attention Model, DIFUSCO (2023). Tiềm năng lớn nhưng thách thức generalization.</p>
+                    <span class="research-status status-active">Phát triển nhanh</span>
+                </div>
+                <div class="research-card">
+                    <span class="research-icon">🤖</span>
+                    <h4>LLM & TSP</h4>
+                    <p>GPT-4 không thể giải TSP hiệu quả. Hỗ trợ thiết kế thuật toán + hybrid solver.</p>
+                    <span class="research-status status-mid">Hỗ trợ gián tiếp</span>
+                </div>
+                <div class="research-card">
+                    <span class="research-icon">🌿</span>
+                    <h4>Green TSP</h4>
+                    <p>Tối ưu CO₂ thay vì khoảng cách. Phụ thuộc tải trọng, tốc độ, loại đường.</p>
+                    <span class="research-status status-active">Đang phát triển</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final Quote -->
+    <section id="quote" class="quote-section">
+        <div class="final-quote">
+            <div class="quote-marks">"</div>
+            <blockquote>
+                TSP không chỉ là một bài toán toán học khô khan — nó là biểu tượng cho một trong những câu hỏi sâu sắc nhất của khoa học: <em>"Ranh giới của tính toán là gì?"</em>
+            </blockquote>
+            <div class="newton-quote">
+                <p>"Tôi có thể tính được chuyển động của các thiên thể, nhưng không thể tính được sự điên rồ của loài người."</p>
+                <cite>— Isaac Newton — (và có lẽ cũng không thể giải TSP với 100 thành phố)</cite>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand"><span>🗺️</span> TSP Explorer</div>
+            <p>Demo tương tác cho báo cáo học thuật: <strong>"Bài toán Người đi du lịch (TSP) và các biến thể"</strong></p>
+            <p class="footer-note">Tài liệu tham khảo: Applegate et al. (2006), Cormen et al. (2009), Garey & Johnson (1979), Karp (1972)</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
